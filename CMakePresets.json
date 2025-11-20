@@ -1,0 +1,88 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base-vcpkg",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      }
+    },
+    {
+      "name": "macos-llvm",
+      "displayName": "macOS (Homebrew LLVM)",
+      "description": "Use Homebrew LLVM Clang + LLD. Requires LLVM_ROOT env var or standard Homebrew path.",
+      "inherits": "base-vcpkg",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "binaryDir": "${sourceDir}/build-macos",
+      "environment": {
+        "LLVM_ROOT": "/opt/homebrew/opt/llvm"
+      },
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "$env{LLVM_ROOT}/bin/clang++",
+        "CMAKE_C_COMPILER": "$env{LLVM_ROOT}/bin/clang",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld -L$env{LLVM_ROOT}/lib/c++ -Wl,-rpath,$env{LLVM_ROOT}/lib/c++",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=lld -L$env{LLVM_ROOT}/lib/c++ -Wl,-rpath,$env{LLVM_ROOT}/lib/c++",
+        "CMAKE_MODULE_LINKER_FLAGS": "-fuse-ld=lld -L$env{LLVM_ROOT}/lib/c++ -Wl,-rpath,$env{LLVM_ROOT}/lib/c++"
+      }
+    },
+    {
+      "name": "windows-msvc",
+      "displayName": "Windows (MSVC)",
+      "description": "Use Visual Studio Compiler",
+      "inherits": "base-vcpkg",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "binaryDir": "${sourceDir}/build-windows"
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "inherits": ["macos-llvm", "windows-msvc"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENABLE_FUZZING": "ON",
+        "ENABLE_ASAN": "ON",
+        "ENABLE_UBSAN": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "inherits": ["macos-llvm", "windows-msvc"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_FUZZING": "OFF",
+        "ENABLE_ASAN": "OFF",
+        "ENABLE_UBSAN": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    }
+  ]
+}

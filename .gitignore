@@ -1,0 +1,9 @@
+build-debug/
+build-macos/
+build-windows/
+vcpkg_installed/
+.cache/
+.vscode/
+*.DS_Store
+compile_commands.json
+wiki/
