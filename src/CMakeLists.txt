@@ -1,8 +1,13 @@
-add_library(server_lib
-    server.cpp
-    server.h
-)
+add_library(server_lib server.cpp server.h)
 target_include_directories(server_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+http_server_apply_compile_options(server_lib)
+http_server_apply_sanitizers(server_lib)
+http_server_enable_clang_tidy(server_lib)
 
 add_executable(http_server main.cpp)
 target_link_libraries(http_server PRIVATE server_lib)
+
+http_server_apply_compile_options(http_server)
+http_server_apply_sanitizers(http_server)
+http_server_enable_clang_tidy(http_server)

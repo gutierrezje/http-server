@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "../src/server.h"
+
+#include <gtest/gtest.h>
 
 TEST(ServerTest, HandleRequest) {
     HttpServer server;

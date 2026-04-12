@@ -1,0 +1,85 @@
+# Automates: clang-format (check), multi-OS Debug build + tests, -Werror strict build, clang-tidy build.
+# Local parity: ./scripts/ci-local.sh (after: git submodule update --init --recursive)
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format-18
+      - name: Check formatting
+        run: |
+          mapfile -t files < <(git ls-files | grep -E '^(src|tests|benchmarks|fuzz)/.*\.(cpp|h|hpp)$' || true)
+          if [ "${#files[@]}" -eq 0 ]; then echo "No matching first-party sources"; exit 1; fi
+          clang-format-18 --dry-run --Werror "${files[@]}"
+
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-2022]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install llvm ninja
+
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ninja --yes
+
+      - name: Configure (Debug + sanitizers on Unix)
+        run: cmake --preset debug
+
+      - name: Build
+        run: cmake --build --preset debug --parallel
+
+      - name: Test
+        run: ctest --preset debug --output-on-failure
+
+      - name: Configure (strict / -Werror on first-party code)
+        run: cmake --preset debug-strict
+
+      - name: Build strict
+        run: cmake --build --preset debug-strict --parallel
+
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang-tidy-18
+      - name: Configure & build with clang-tidy
+        run: |
+          cmake --preset clang-tidy -DHTTP_SERVER_CLANG_TIDY_EXECUTABLE=/usr/bin/clang-tidy-18
+          cmake --build --preset clang-tidy --parallel

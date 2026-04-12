@@ -1,9 +1,36 @@
+# CMake / presets
+build/
+build-apple/
 build-debug/
+build-fuzz/
+build-llvm/
 build-macos/
+build-strict/
+build-tidy/
 build-windows/
+CMakeUserPresets.json
+
+# vcpkg manifest mode (build tree); submodule stays tracked
 vcpkg_installed/
+
+# Tooling / IDE
 .cache/
 .vscode/
-*.DS_Store
+.idea/
+*.swp
+*~
+
+# macOS
+.DS_Store
+
+# clangd / bear (generated at repo root when desired)
 compile_commands.json
+
+# Python (hooks, scripts)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Project-specific
 wiki/

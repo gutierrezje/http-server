@@ -1,0 +1,24 @@
+# Applies when running clang-tidy (e.g. via CXX_CLANG_TIDY or clangd).
+# HeaderFilterRegex limits diagnostics to our first-party trees (not vcpkg_installed).
+---
+Checks: >
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  clang-analyzer-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-pro-type-member-init,
+  modernize-avoid-bind,
+  modernize-use-emplace,
+  modernize-use-nodiscard,
+  modernize-use-nullptr,
+  modernize-use-override
+WarningsAsErrors: ""
+# Exclude vcpkg trees that also use path segments like ".../src/...".
+HeaderFilterRegex: '^(?!.*/(vcpkg/|vcpkg_installed/))(.*/)?(src|tests|benchmarks|fuzz)/'
+FormatStyle: file
+...

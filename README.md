@@ -65,4 +65,3 @@ To run performance micro-benchmarks:
 ```bash
 ./build-release/benchmarks/server_benchmarks
 ```
-

@@ -1,0 +1,17 @@
+# Optional: pip install pre-commit && pre-commit install
+# Runs fast checks before each commit; mirrors part of CI.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^vcpkg/
+      - id: end-of-file-fixer
+        exclude: ^vcpkg/
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8
+    hooks:
+      - id: clang-format
+        files: ^(src|tests|benchmarks|fuzz)/.*\.(cpp|h|hpp)$

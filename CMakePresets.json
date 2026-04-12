@@ -9,16 +9,16 @@
       }
     },
     {
-      "name": "macos-llvm",
-      "displayName": "macOS (Homebrew LLVM)",
-      "description": "Use Homebrew LLVM Clang + LLD. Requires LLVM_ROOT env var or standard Homebrew path.",
-      "inherits": "base-vcpkg",
+      "name": "macos-homebrew",
+      "hidden": true,
+      "inherits": ["base-vcpkg"],
+      "description": "Default macOS toolchain: Homebrew LLVM + lld + libc++. Set LLVM_ROOT before configure on Intel Homebrew (/usr/local/opt/llvm).",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Darwin"
       },
-      "binaryDir": "${sourceDir}/build-macos",
+      "binaryDir": "${sourceDir}/build",
       "environment": {
         "LLVM_ROOT": "/opt/homebrew/opt/llvm"
       },
@@ -31,10 +31,21 @@
       }
     },
     {
+      "name": "macos-apple",
+      "hidden": true,
+      "inherits": ["base-vcpkg"],
+      "description": "Fallback when Homebrew LLVM is unavailable: Xcode/Apple Clang only.",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "binaryDir": "${sourceDir}/build-apple"
+    },
+    {
       "name": "windows-msvc",
-      "displayName": "Windows (MSVC)",
-      "description": "Use Visual Studio Compiler",
-      "inherits": "base-vcpkg",
+      "hidden": true,
+      "inherits": ["base-vcpkg"],
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -43,25 +54,100 @@
       "binaryDir": "${sourceDir}/build-windows"
     },
     {
-      "name": "debug",
-      "displayName": "Debug",
-      "inherits": ["macos-llvm", "windows-msvc"],
+      "name": "linux",
+      "hidden": true,
+      "inherits": ["base-vcpkg"],
+      "description": "Linux: default system compiler (GCC or Clang). Install ninja-build for the Ninja generator.",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "http-server-debug",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "ENABLE_FUZZING": "ON",
+        "ENABLE_FUZZING": "OFF",
         "ENABLE_ASAN": "ON",
         "ENABLE_UBSAN": "ON"
       }
     },
     {
-      "name": "release",
-      "displayName": "Release",
-      "inherits": ["macos-llvm", "windows-msvc"],
+      "name": "http-server-release",
+      "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "ENABLE_FUZZING": "OFF",
         "ENABLE_ASAN": "OFF",
         "ENABLE_UBSAN": "OFF"
+      }
+    },
+    {
+      "name": "strict-first-party",
+      "hidden": true,
+      "cacheVariables": {
+        "HTTP_SERVER_WERROR": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug",
+      "description": "macOS: Homebrew LLVM (brew install llvm). Without it: debug-apple-clang. Linux/Windows: system toolchain.",
+      "inherits": ["macos-homebrew", "windows-msvc", "linux", "http-server-debug"]
+    },
+    {
+      "name": "debug-apple-clang",
+      "displayName": "Debug (Apple Clang)",
+      "description": "macOS only. Xcode toolchain; separate build dir so it does not clash with the default Homebrew LLVM build/.",
+      "inherits": ["macos-apple", "http-server-debug"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "fuzz",
+      "displayName": "Debug + libFuzzer target",
+      "inherits": ["debug"],
+      "binaryDir": "${sourceDir}/build-fuzz",
+      "cacheVariables": {
+        "ENABLE_FUZZING": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release",
+      "description": "macOS: Homebrew LLVM. Without it: release-apple-clang. Linux/Windows: system toolchain.",
+      "inherits": ["macos-homebrew", "windows-msvc", "linux", "http-server-release"]
+    },
+    {
+      "name": "release-apple-clang",
+      "displayName": "Release (Apple Clang)",
+      "description": "macOS only. Xcode toolchain; uses build-apple/.",
+      "inherits": ["macos-apple", "http-server-release"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "debug-strict",
+      "displayName": "Debug (warnings as errors)",
+      "inherits": ["debug", "strict-first-party"],
+      "binaryDir": "${sourceDir}/build-strict"
+    },
+    {
+      "name": "clang-tidy",
+      "displayName": "Debug + clang-tidy on compile",
+      "inherits": ["debug"],
+      "binaryDir": "${sourceDir}/build-tidy",
+      "cacheVariables": {
+        "HTTP_SERVER_ENABLE_CLANG_TIDY": "ON"
       }
     }
   ],
@@ -71,8 +157,28 @@
       "configurePreset": "debug"
     },
     {
+      "name": "debug-apple-clang",
+      "configurePreset": "debug-apple-clang"
+    },
+    {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "release-apple-clang",
+      "configurePreset": "release-apple-clang"
+    },
+    {
+      "name": "debug-strict",
+      "configurePreset": "debug-strict"
+    },
+    {
+      "name": "clang-tidy",
+      "configurePreset": "clang-tidy"
+    },
+    {
+      "name": "fuzz",
+      "configurePreset": "fuzz"
     }
   ],
   "testPresets": [
@@ -81,8 +187,28 @@
       "configurePreset": "debug"
     },
     {
+      "name": "debug-apple-clang",
+      "configurePreset": "debug-apple-clang"
+    },
+    {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "release-apple-clang",
+      "configurePreset": "release-apple-clang"
+    },
+    {
+      "name": "debug-strict",
+      "configurePreset": "debug-strict"
+    },
+    {
+      "name": "clang-tidy",
+      "configurePreset": "clang-tidy"
+    },
+    {
+      "name": "fuzz",
+      "configurePreset": "fuzz"
     }
   ]
 }
