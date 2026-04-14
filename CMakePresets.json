@@ -100,7 +100,7 @@
     {
       "name": "fuzz",
       "displayName": "Debug + libFuzzer target",
-      "inherits": ["debug"],
+      "inherits": ["base-vcpkg", "http-server-debug"],
       "binaryDir": "${sourceDir}/build-fuzz",
       "cacheVariables": {
         "ENABLE_FUZZING": "ON"
@@ -138,13 +138,14 @@
     {
       "name": "debug-strict",
       "displayName": "Debug (warnings as errors)",
-      "inherits": ["debug", "strict-first-party"],
+      "inherits": ["base-vcpkg", "http-server-debug", "strict-first-party"],
       "binaryDir": "${sourceDir}/build-strict"
     },
     {
       "name": "clang-tidy",
       "displayName": "Debug + clang-tidy on compile",
-      "inherits": ["debug"],
+      "description": "Same Debug flags as preset debug, but build-tidy/ and CXX_CLANG_TIDY. Does not inherit debug (avoids CMake marking the preset disabled on some runners).",
+      "inherits": ["base-vcpkg", "http-server-debug"],
       "binaryDir": "${sourceDir}/build-tidy",
       "cacheVariables": {
         "HTTP_SERVER_ENABLE_CLANG_TIDY": "ON"
