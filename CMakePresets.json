@@ -12,13 +12,12 @@
       "name": "macos-homebrew",
       "hidden": true,
       "inherits": ["base-vcpkg"],
-      "description": "Default macOS toolchain: Homebrew LLVM + lld + libc++. Set LLVM_ROOT before configure on Intel Homebrew (/usr/local/opt/llvm).",
+      "description": "Homebrew LLVM + lld + libc++. Intel Homebrew: export LLVM_ROOT=/usr/local/opt/llvm before cmake.",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Darwin"
       },
-      "binaryDir": "${sourceDir}/build",
       "environment": {
         "LLVM_ROOT": "/opt/homebrew/opt/llvm"
       },
@@ -41,29 +40,6 @@
         "rhs": "Darwin"
       },
       "binaryDir": "${sourceDir}/build-apple"
-    },
-    {
-      "name": "windows-msvc",
-      "hidden": true,
-      "inherits": ["base-vcpkg"],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      },
-      "binaryDir": "${sourceDir}/build-windows"
-    },
-    {
-      "name": "linux",
-      "hidden": true,
-      "inherits": ["base-vcpkg"],
-      "description": "Linux: default system compiler (GCC or Clang). Install ninja-build for the Ninja generator.",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
-      },
-      "binaryDir": "${sourceDir}/build"
     },
     {
       "name": "http-server-debug",
@@ -95,13 +71,25 @@
     {
       "name": "debug",
       "displayName": "Debug",
-      "description": "macOS: Homebrew LLVM (brew install llvm). Without it: debug-apple-clang. Linux/Windows: system toolchain.",
-      "inherits": ["macos-homebrew", "windows-msvc", "linux", "http-server-debug"]
+      "description": "Portable default: vcpkg + Debug + sanitizers (Unix). On macOS use debug-homebrew-llvm for Homebrew LLVM, or set CMAKE_CXX_COMPILER. On Windows uses default MSVC.",
+      "inherits": ["base-vcpkg", "http-server-debug"],
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "debug-homebrew-llvm",
+      "displayName": "Debug (Homebrew LLVM)",
+      "description": "macOS only. Same as debug plus Homebrew LLVM/lld/libc++.",
+      "inherits": ["debug", "macos-homebrew"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
     },
     {
       "name": "debug-apple-clang",
       "displayName": "Debug (Apple Clang)",
-      "description": "macOS only. Xcode toolchain; separate build dir so it does not clash with the default Homebrew LLVM build/.",
+      "description": "macOS only. Xcode toolchain; separate build dir so it does not clash with build/.",
       "inherits": ["macos-apple", "http-server-debug"],
       "condition": {
         "type": "equals",
@@ -121,8 +109,20 @@
     {
       "name": "release",
       "displayName": "Release",
-      "description": "macOS: Homebrew LLVM. Without it: release-apple-clang. Linux/Windows: system toolchain.",
-      "inherits": ["macos-homebrew", "windows-msvc", "linux", "http-server-release"]
+      "description": "Portable Release build. On macOS use release-homebrew-llvm for Homebrew LLVM.",
+      "inherits": ["base-vcpkg", "http-server-release"],
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "release-homebrew-llvm",
+      "displayName": "Release (Homebrew LLVM)",
+      "description": "macOS only. Same as release plus Homebrew LLVM.",
+      "inherits": ["release", "macos-homebrew"],
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
     },
     {
       "name": "release-apple-clang",
@@ -157,12 +157,20 @@
       "configurePreset": "debug"
     },
     {
+      "name": "debug-homebrew-llvm",
+      "configurePreset": "debug-homebrew-llvm"
+    },
+    {
       "name": "debug-apple-clang",
       "configurePreset": "debug-apple-clang"
     },
     {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "release-homebrew-llvm",
+      "configurePreset": "release-homebrew-llvm"
     },
     {
       "name": "release-apple-clang",
@@ -187,12 +195,20 @@
       "configurePreset": "debug"
     },
     {
+      "name": "debug-homebrew-llvm",
+      "configurePreset": "debug-homebrew-llvm"
+    },
+    {
       "name": "debug-apple-clang",
       "configurePreset": "debug-apple-clang"
     },
     {
       "name": "release",
       "configurePreset": "release"
+    },
+    {
+      "name": "release-homebrew-llvm",
+      "configurePreset": "release-homebrew-llvm"
     },
     {
       "name": "release-apple-clang",

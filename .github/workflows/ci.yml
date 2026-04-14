@@ -47,6 +47,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: "3.28.6"
+
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
@@ -64,7 +69,16 @@ jobs:
         run: choco install ninja --yes
 
       - name: Configure (Debug + sanitizers on Unix)
-        run: cmake --preset debug
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" == "macOS" ]]; then
+            export CMAKE_CXX_COMPILER="/opt/homebrew/opt/llvm/bin/clang++"
+            export CMAKE_C_COMPILER="/opt/homebrew/opt/llvm/bin/clang"
+            export CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+            export CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+            export CMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+          fi
+          cmake --preset debug
 
       - name: Build
         run: cmake --build --preset debug --parallel
@@ -73,7 +87,16 @@ jobs:
         run: ctest --preset debug --output-on-failure
 
       - name: Configure (strict / -Werror on first-party code)
-        run: cmake --preset debug-strict
+        shell: bash
+        run: |
+          if [[ "${RUNNER_OS}" == "macOS" ]]; then
+            export CMAKE_CXX_COMPILER="/opt/homebrew/opt/llvm/bin/clang++"
+            export CMAKE_C_COMPILER="/opt/homebrew/opt/llvm/bin/clang"
+            export CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+            export CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+            export CMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
+          fi
+          cmake --preset debug-strict
 
       - name: Build strict
         run: cmake --build --preset debug-strict --parallel
@@ -84,6 +107,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Install CMake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: "3.28.6"
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y ninja-build clang-tidy-18
