@@ -1,5 +1,7 @@
 # Automates: clang-format (check), multi-OS Debug build + tests, -Werror strict build, clang-tidy build.
 # Local parity: ./scripts/ci-local.sh (after: git submodule update --init --recursive)
+#
+# vcpkg binary cache: uses the official GitHub Actions backend (see VCPKG_BINARY_SOURCES below).
 
 name: CI
 
@@ -13,8 +15,13 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# actions:write lets vcpkg push/pull binary cache entries via the x-gha provider.
 permissions:
   contents: read
+  actions: write
+
+env:
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
 
 jobs:
   format:
@@ -77,6 +84,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y ninja-build clang-tidy-18
       - name: Configure & build with clang-tidy
