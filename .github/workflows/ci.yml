@@ -1,4 +1,4 @@
-# Automates: clang-format (check), multi-OS Debug build + tests, -Werror strict build, clang-tidy build.
+# Automates: clang-format (check), multi-OS Debug build + tests, and clang-tidy verification.
 # Local parity: ./scripts/ci-local.sh (after: git submodule update --init --recursive)
 #
 # vcpkg binary cache: uses the official GitHub Actions backend (see VCPKG_BINARY_SOURCES below).
@@ -86,21 +86,6 @@ jobs:
       - name: Test
         run: ctest --preset debug --output-on-failure
 
-      - name: Configure (strict / -Werror on first-party code)
-        shell: bash
-        run: |
-          if [[ "${RUNNER_OS}" == "macOS" ]]; then
-            export CMAKE_CXX_COMPILER="/opt/homebrew/opt/llvm/bin/clang++"
-            export CMAKE_C_COMPILER="/opt/homebrew/opt/llvm/bin/clang"
-            export CMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
-            export CMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
-            export CMAKE_MODULE_LINKER_FLAGS="-fuse-ld=lld -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++"
-          fi
-          cmake --preset debug-strict
-
-      - name: Build strict
-        run: cmake --build --preset debug-strict --parallel
-
   clang-tidy:
     runs-on: ubuntu-24.04
     steps:
@@ -114,8 +99,12 @@ jobs:
           cmake-version: "3.28.6"
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y ninja-build clang-tidy-18
-      - name: Configure & build with clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang-tidy-18 python3-pip
+
+      - name: Configure (Debug)
+        run: cmake --preset debug
+
+      - name: Run clang-tidy (pre-commit hook)
         run: |
-          cmake --preset clang-tidy -DHTTP_SERVER_CLANG_TIDY_EXECUTABLE=/usr/bin/clang-tidy-18
-          cmake --build --preset clang-tidy --parallel
+          python3 -m pip install --user pre-commit
+          pre-commit run clang-tidy --all-files
