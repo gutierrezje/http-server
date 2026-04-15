@@ -10,6 +10,9 @@ build-windows/
 build-release/
 CMakeUserPresets.json
 
+# Docs output
+docs/doxygen/
+
 # vcpkg manifest mode (build tree); submodule stays tracked
 vcpkg_installed/
 

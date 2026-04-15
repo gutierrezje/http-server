@@ -1,0 +1,25 @@
+# Minimal Doxygen config for this repo.
+
+PROJECT_NAME           = "HttpServer"
+OUTPUT_DIRECTORY       = docs/doxygen
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+
+INPUT                  = src docs/mainpage.md
+FILE_PATTERNS          = *.h *.hpp *.cpp *.md
+RECURSIVE              = YES
+
+EXTRACT_ALL            = NO
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
+
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+
+# Make Markdown in docs nicer.
+MARKDOWN_SUPPORT       = YES
+USE_MDFILE_AS_MAINPAGE = docs/mainpage.md
+
+# Avoid documenting dependencies accidentally.
+EXCLUDE_PATTERNS       = */vcpkg/* */vcpkg_installed/*
