@@ -1,13 +1,13 @@
 # CMake / presets
 build/
-build-apple/
 build-debug/
 build-fuzz/
-build-llvm/
 build-macos/
 build-strict/
 build-tidy/
+build-tsan/
 build-windows/
+build-release/
 CMakeUserPresets.json
 
 # vcpkg manifest mode (build tree); submodule stays tracked
