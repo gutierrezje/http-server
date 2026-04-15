@@ -5,5 +5,5 @@
 TEST(ServerTest, HandleRequest) {
     HttpServer server;
     std::string response = server.handleRequest("GET / HTTP/1.1");
-    EXPECT_TRUE(response.find("200 OK") != std::string::npos);
+    EXPECT_TRUE(response.contains("200 OK"));
 }

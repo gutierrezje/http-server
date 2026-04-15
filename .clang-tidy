@@ -6,6 +6,8 @@ Checks: >
   -bugprone-easily-swappable-parameters,
   clang-analyzer-*,
   performance-*,
+  performance-move-const-arg,
+  performance-unnecessary-value-param,
   portability-*,
   readability-*,
   -readability-identifier-length,
@@ -13,10 +15,21 @@ Checks: >
   cppcoreguidelines-init-variables,
   cppcoreguidelines-pro-type-member-init,
   modernize-avoid-bind,
+  modernize-avoid-c-arrays,
+  modernize-concat-nested-namespaces,
+  modernize-loop-convert,
+  modernize-make-shared,
+  modernize-make-unique,
+  modernize-unary-static-assert,
+  modernize-use-default-member-init,
   modernize-use-emplace,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
   modernize-use-nodiscard,
   modernize-use-nullptr,
-  modernize-use-override
+  modernize-use-override,
+  modernize-use-std-print,
+  modernize-use-using
 WarningsAsErrors: ""
 # Exclude vcpkg trees that also use path segments like ".../src/...".
 HeaderFilterRegex: '^(?!.*/(vcpkg/|vcpkg_installed/))(.*/)?(src|tests|benchmarks|fuzz)/'
