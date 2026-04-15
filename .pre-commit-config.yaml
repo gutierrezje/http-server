@@ -1,5 +1,10 @@
 # Optional: pip install pre-commit && pre-commit install
 # Runs fast checks before each commit; mirrors part of CI.
+#
+# clang-format: uses pinned LLVM mirror (may differ slightly from Apple clang-format — use
+#   `brew install clang-format` or match the hook rev for identical output).
+# clang-tidy: runs `clang-tidy -p build` on staged first-party sources; requires:
+#   cmake --preset debug   (so build/compile_commands.json exists)
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -15,3 +20,12 @@ repos:
     hooks:
       - id: clang-format
         files: ^(src|tests|benchmarks|fuzz)/.*\.(cpp|h|hpp)$
+
+  - repo: local
+    hooks:
+      - id: clang-tidy
+        name: clang-tidy
+        language: system
+        entry: bash scripts/pre-commit-clang-tidy.sh
+        files: ^(src|tests|benchmarks|fuzz)/.*\.(cpp|h|hpp)$
+        require_serial: true
